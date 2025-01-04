@@ -5,6 +5,8 @@
 #include "common.h"
 #include <vector>
 #include <cstdint>
+#include <string>
+#include <iomanip>
 
 namespace compression {
 
@@ -31,18 +33,70 @@ public:
     static constexpr uint8_t ZERO_UNMATCH       = 0x04;
     static constexpr uint8_t PARTIAL_MATCH_3B   = 0x05;
 
-    
-    struct CompressedBlock {
+    std::string
+    getPatternName(uint8_t pattern) const {
+        switch (pattern) {
+            case ZERO_PATTERN:      return "ZERO_PATTERN";
+            case NONE_MATCH:        return "NONE_MATCH";
+            case MATCH_DICT: return "MATCH_DICT";
+            case PARTIAL_MATCH_2B: return "PARTIAL_MATCH_2B";
+            case ZERO_UNMATCH: return "ZERO_UNMATCH";
+            case PARTIAL_MATCH_3B: return "PARTIAL_MATCH_3B";
+        }
+        return "UNKNOWN";
+    }
+
+    struct Compressed2Word {
         uint8_t     pattern = 0;
         uint32_t    dict_index = 0;
         std::vector<uint8_t> unmatch_data;
     };
 
-private:
-    CompressedBlock compressBlock(const std::vector<uint8_t>& data, size_t offset, size_t size);
-    std::vector<uint8_t> decompressBlock(const std::vector<uint8_t>& data, size_t& offset);
+    // print out pattern and dict_index and also every element in unmatch_data
+    std::string printCompressed2Word(const Compressed2Word& block) const {
+        std::string result = std::string(getPatternName(block.pattern)) + " " + std::to_string(block.dict_index) + " ";
+        for (const auto& data : block.unmatch_data) {
+            std::stringstream ss;
+            ss << std::hex << static_cast<int>(data);
+            result += ss.str() + " ";
+        }
+        return result;
+    }
 
-    CompressedBlock compress2Word(const uint32_t& data);
+    uint32_t getCompBlkSize(uint8_t pattern) const {
+        // this is the size of pattern + dict_index + unmatch_data
+        // like partial match 2B, it has 2B unmatch data
+        // like zero unmatch, it has 1B unmatch data
+        // zero pattern and none match does not have unmatch data
+        if (pattern == ZERO_PATTERN) {
+            return 1 + 4;
+        } else if (pattern == NONE_MATCH) {
+            return 1 + 4 + 64;
+        } else if (pattern == MATCH_DICT) {
+            return 1 + 4;
+        } else if (pattern == PARTIAL_MATCH_2B) {
+            return 1 + 4 + 2;
+        } else if (pattern == ZERO_UNMATCH) {
+            return 1 + 4 + 1;
+        } else if (pattern == PARTIAL_MATCH_3B) {
+            return 1 + 4 + 2;
+        }
+        return 0;
+    }
+
+    void setFreeze(bool freeze) {
+        dict_.setFreeze(freeze);
+    }
+
+    void printDict() const {
+        dict_.print();
+    }
+
+private:
+    Compressed2Word compress2Word(const std::vector<uint8_t>& data, size_t offset, size_t size);
+    std::vector<uint8_t> decompress2Word(const std::vector<uint8_t>& data, size_t& offset);
+
+    Compressed2Word compress2Word(const uint32_t& data);
 
     Dictionary dict_;
 };

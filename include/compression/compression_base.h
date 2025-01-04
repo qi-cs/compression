@@ -16,9 +16,10 @@ public:
     
     // Common utility functions can be added here    
     void print_bytes(const std::vector<uint8_t>& data, size_t bytes_per_row) {
+        printf("Data size: %zu\n", data.size());
         for (size_t i = 0; i < data.size(); i++) {
             // Print byte in hexadecimal format with leading zeros
-            printf("%02X ", data[data.size() - i - 1]);
+            printf("%02X ", data[i]);
             
             // Add newline after every bytes_per_row bytes
             if ((i + 1) % bytes_per_row == 0 || i == data.size() - 1) {

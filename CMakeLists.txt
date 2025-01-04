@@ -4,7 +4,8 @@ project(compression_lib)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+# Set build type to Debug
+set(CMAKE_BUILD_TYPE Debug)
 # Create library
 add_library(compression
     src/cpack.cc

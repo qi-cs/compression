@@ -136,8 +136,16 @@ public:
         lru_list_.clear();
     }
 
-    void setFreeze() {
-        freeze_ = true;
+    void setFreeze(bool freeze) {
+        freeze_ = freeze;
+    }
+
+    // print the dictionary
+    void print() const {
+        printf("Dictionary size: %zu\n", storage_.size());
+        for (const auto& [key, value] : storage_) {
+            printf("key: %08X, value: %08X\n", key, value.first);
+        }
     }
 };
 
