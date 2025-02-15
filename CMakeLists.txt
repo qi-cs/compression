@@ -11,6 +11,8 @@ add_library(compression
     src/cpack.cc
     src/bdi.cc
     src/fpc.cc
+    src/lz4.cc
+    src/huffman.cc
 )
 
 # Set include directories
